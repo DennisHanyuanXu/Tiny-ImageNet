@@ -1,0 +1,6 @@
+.DS_Store
+.ipynb_checkpoints/
+
+# Dataset
+mnist/
+tiny-imagenet-200/
