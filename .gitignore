@@ -1,6 +1,10 @@
 .DS_Store
-.ipynb_checkpoints/
+__pycache__/
+
+# Results
+*.png
 
 # Dataset
 # mnist/
 tiny-imagenet-200/
+

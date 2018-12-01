@@ -33,3 +33,5 @@ It's also normal to add regularization to the loss function so that the loss fun
 #### 2. 1. 3 Performance
 The SVM model can reach __5%__ top-1 accuracy and __16%__ top-5 accuracy.
 
+### 2. 2 AlexNet
+#### 2. 2. 1 Structure
