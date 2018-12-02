@@ -41,7 +41,7 @@ parser.add_argument('--dataset', default='tiny-imagenet-200',
                     help='name of dataset to train on (default: tiny-imagenet-200)')
 parser.add_argument('--data-dir', default=os.getcwd(), type=str, 
                     help='path to dataset (default: current directory)')
-parser.add_argument('--cuda', action='store_true', 
+parser.add_argument('--cuda', action='store_false', 
                     help='cuda (default: True)')
 parser.add_argument('--model', default='SVM', choices=['SVM', 'AlexNet'], 
                     help='model to train (default: SVM)')
@@ -53,7 +53,7 @@ parser.add_argument('--reg', action='store_true',
                     help='L2 regularization for hinge loss (default: False)')
 parser.add_argument('--margin', default=20, type=int, 
                     help='margin for computing hinge loss (default: 20)')
-parser.add_argument('--data-augmentation', action='store_true', 
+parser.add_argument('--data-augmentation', action='store_false', 
                     help='data augmentation when preparing Tiny ImageNet (default: True)')
 parser.add_argument('--topk', default=1, type=int, 
                     help='top-k accuracy (default: 1)')
@@ -219,4 +219,5 @@ def run_experiment(args):
 
 if __name__ == '__main__':
     args = parser.parse_args()
+    args.cuda = args.cuda and torch.cuda.is_available()
     run_experiment(args)
