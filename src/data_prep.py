@@ -41,24 +41,24 @@ def prepare_imagenet(args):
     kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
 
     # Pre-calculated mean & std on imagenet:
-    # normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    # norm = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     # For other datasets, we could just simply use 0.5:
-    # normalize = transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
-    
-    normalize = transforms.Normalize(mean=[0.5, 0.5, 0.5],
-                                     std=[0.5, 0.5, 0.5])
+    # norm = transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
     
     print('Preparing dataset ...')
+    norm = transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+    
+    train_trans = [transforms.ToTensor(), norm]
+    val_trans = [transforms.ToTensor(), norm]
+    # Data augmentation
+    if args.data_augmentation:
+        train_trans = [transforms.RandomHorizontalFlip()] + train_trans
+
     train_data = datasets.ImageFolder(train_dir, 
-                                      transform=transforms.Compose([
-                                          #transforms.RandomResizedCrop(56),
-                                          #transforms.RandomHorizontalFlip(),
-                                          transforms.ToTensor()]))
+                                    transform=transforms.Compose(train_trans))
     
     val_data = datasets.ImageFolder(val_dir, 
-                                    transform=transforms.Compose([
-                                        #transforms.RandomResizedCrop(56),
-                                        transforms.ToTensor()]))
+                                    transform=transforms.Compose(val_trans))
     
     print('Preparing data loaders ...')
     train_data_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, 

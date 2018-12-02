@@ -53,6 +53,8 @@ parser.add_argument('--reg', action='store_true',
                     help='L2 regularization for hinge loss (default: False)')
 parser.add_argument('--margin', default=20, type=int, 
                     help='margin for computing hinge loss (default: 20)')
+parser.add_argument('--data-augmentation', action='store_true', 
+                    help='data augmentation when preparing Tiny ImageNet (default: True)')
 parser.add_argument('--topk', default=1, type=int, 
                     help='top-k accuracy (default: 1)')
 parser.add_argument('--results-dir', default=os.path.join(os.getcwd(), 'results'), type=str, 
