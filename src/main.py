@@ -19,31 +19,46 @@ from svm import SVM, MultiClassHingeLoss
 from alexnet import AlexNet
 
 
-class Args(object):
-      def __init__(self, batch_size=64, test_batch_size=1000, epochs=10, lr=0.01, 
-                   optimizer='adam', momentum=0.5, seed=1, log_interval=100, 
-                   dataset='mnist', data_dir=os.getcwd(), cuda=True, model='SVM', 
-                   features=784, classes=10, reg=False, margin=1, topk=5, 
-                   results=os.path.join(os.getcwd(), 'results')):
-        
-        self.batch_size = batch_size
-        self.test_batch_size = test_batch_size
-        self.epochs = epochs
-        self.lr = lr
-        self.optimizer = optimizer
-        self.momentum = momentum
-        self.seed = seed
-        self.log_interval = log_interval
-        self.dataset = dataset
-        self.data_dir = data_dir # Path to datasets
-        self.cuda = cuda and torch.cuda.is_available()
-        self.model = model
-        self.features = features # Number of input features
-        self.classes = classes # Number of classes
-        self.reg = reg # L2 regularization
-        self.margin = margin # Margin in hinge loss
-        self.topk = topk # Top-k accuracy
-        self.results = results
+parser = argparse.ArgumentParser(description='PyTorch Tiny ImageNet Training')
+parser.add_argument('--batch-size', default=1000, type=int, 
+                    help='mini-batch size for training (default: 1000)')
+parser.add_argument('--test-batch-size', default=1000, type=int, 
+                    help='mini-batch size for testing (default: 1000)')
+parser.add_argument('--epochs', default=10, type=int, 
+                    help='number of total epochs to run (default: 10)')
+parser.add_argument('--lr', default=0.01, type=float, 
+                    help='learning rate (default: 0.01)')
+parser.add_argument('--optimizer', default='adam', choices=['adam', 'sgd'], 
+                    help='optimizer (default: adam)')
+parser.add_argument('--momentum', default=0.5, type=float, 
+                    help='momentum (default: 0.5)')
+parser.add_argument('--seed', default=1, type=int, 
+                    help='seed for initializing training (default: 1)')
+parser.add_argument('--log-interval', default=100, type=int, 
+                    help='batches to wait before logging detailed status (default: 100)')
+parser.add_argument('--dataset', default='tiny-imagenet-200', 
+                    choices=['mnist', 'tiny-imagenet-200'], 
+                    help='name of dataset to train on (default: tiny-imagenet-200)')
+parser.add_argument('--data-dir', default=os.getcwd(), type=str, 
+                    help='path to dataset (default: current directory)')
+parser.add_argument('--cuda', action='store_true', 
+                    help='cuda (default: True)')
+parser.add_argument('--model', default='SVM', choices=['SVM', 'AlexNet'], 
+                    help='model to train (default: SVM)')
+parser.add_argument('--features', default=12288, type=int, 
+                    help='number of input features to SVM (default: 12288)')
+parser.add_argument('--classes', default=200, type=int, 
+                    help='number of output classes of SVM (default: 200)')
+parser.add_argument('--reg', action='store_true', 
+                    help='L2 regularization for hinge loss (default: False)')
+parser.add_argument('--margin', default=20, type=int, 
+                    help='margin for computing hinge loss (default: 20)')
+parser.add_argument('--topk', default=1, type=int, 
+                    help='top-k accuracy (default: 1)')
+parser.add_argument('--results-dir', default=os.path.join(os.getcwd(), 'results'), type=str, 
+                    help='path to results (default: current directory)')
+parser.add_argument('--prefix', default='default', type=str, 
+                    help='prefix of the plot (default: default)')
 
 
 def train(model, criterion, optimizer, train_loader, epoch, 
@@ -146,7 +161,7 @@ def run_experiment(args):
     if args.dataset == 'mnist':
         train_loader, test_loader, _, _ = prepare_mnist(args)
     else:
-        # create_val_img_folder(args)
+        create_val_img_folder(args)
         train_loader, test_loader, _, _ = prepare_imagenet(args)
     
     # Model & Criterion
@@ -176,7 +191,8 @@ def run_experiment(args):
                                       train_accs, args)
         
         val_acc = test(model, criterion, test_loader, epoch, val_losses, val_accs, args)
-        
+    
+    # Plot graphs
     fig, axes = plt.subplots(1, 4, figsize=(13, 4))
     axes[0].plot(train_losses)
     axes[0].set_title('Loss')
@@ -193,27 +209,12 @@ def run_experiment(args):
     # plt.tight_layout()
 
     # Save results
-    if not os.path.exists(args.results):
-        os.makedirs(args.results)
-    filename = args.dataset + '_' + args.model + '_plot.png'
-    fig.savefig(os.path.join(args.results, filename))
+    if not os.path.exists(args.results_dir):
+        os.makedirs(args.results_dir)
+    filename = '_'.join([args.prefix, args.dataset, args.model, 'plot.png'])
+    fig.savefig(os.path.join(args.results_dir, filename))
 
 
 if __name__ == '__main__':
-    run_experiment(Args(topk=1, epochs=2))
-    run_experiment(Args(dataset='tiny-imagenet-200', batch_size=1000, features=12288, classes=200, margin=20, epochs=3))
-    run_experiment(Args(dataset='tiny-imagenet-200', model='AlexNet', batch_size=1000, classes=200))
-
-
-# TODO
-# Mnist - SVM - Top1
-# run_experiment(Args(topk=1))
-
-# Tiny Imagenet - SVM - Top5
-# run_experiment(Args(dataset='tiny-imagenet-200', batch_size=1000, features=12288, classes=200, margin=20))
-
-# Tiny Imagenet - AlexNet - Top5
-# run_experiment(Args(dataset='tiny-imagenet-200', model='AlexNet', batch_size=1000, classes=200))
-
-# parser = argparse.ArgumentParser(description='PyTorch Tiny ImageNet Training')
-# args = parser.parse_args()
+    args = parser.parse_args()
+    run_experiment(args)
