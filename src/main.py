@@ -13,6 +13,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
 from torch.nn.parameter import Parameter
+import torchvision.models as models
 
 from data_prep import prepare_mnist, prepare_imagenet, create_val_img_folder
 from svm import SVM, MultiClassHingeLoss
@@ -20,31 +21,37 @@ from alexnet import AlexNet
 
 
 parser = argparse.ArgumentParser(description='PyTorch Tiny ImageNet Training')
-parser.add_argument('--batch-size', default=1000, type=int, 
-                    help='mini-batch size for training (default: 1000)')
-parser.add_argument('--test-batch-size', default=1000, type=int, 
-                    help='mini-batch size for testing (default: 1000)')
-parser.add_argument('--epochs', default=10, type=int, 
-                    help='number of total epochs to run (default: 10)')
-parser.add_argument('--lr', default=0.01, type=float, 
-                    help='learning rate (default: 0.01)')
-parser.add_argument('--optimizer', default='adam', choices=['adam', 'sgd'], 
-                    help='optimizer (default: adam)')
-parser.add_argument('--momentum', default=0.5, type=float, 
-                    help='momentum (default: 0.5)')
-parser.add_argument('--seed', default=1, type=int, 
-                    help='seed for initializing training (default: 1)')
-parser.add_argument('--log-interval', default=100, type=int, 
-                    help='batches to wait before logging detailed status (default: 100)')
+
 parser.add_argument('--dataset', default='tiny-imagenet-200', 
                     choices=['mnist', 'tiny-imagenet-200'], 
                     help='name of dataset to train on (default: tiny-imagenet-200)')
 parser.add_argument('--data-dir', default=os.getcwd(), type=str, 
                     help='path to dataset (default: current directory)')
+
+parser.add_argument('--batch-size', default=1000, type=int, 
+                    help='mini-batch size for training (default: 1000)')
+parser.add_argument('--test-batch-size', default=1000, type=int, 
+                    help='mini-batch size for testing (default: 1000)')
+parser.add_argument('--epochs', default=25, type=int, 
+                    help='number of total epochs to run (default: 25)')
+parser.add_argument('--seed', default=1, type=int, 
+                    help='seed for initializing training (default: 1)')
 parser.add_argument('--cuda', action='store_false', 
                     help='cuda (default: True)')
-parser.add_argument('--model', default='SVM', choices=['SVM', 'AlexNet'], 
-                    help='model to train (default: SVM)')
+parser.add_argument('--log-interval', default=100, type=int, 
+                    help='batches to wait before logging detailed status (default: 100)')
+
+parser.add_argument('--model', default='AlexNet', choices=['SVM', 'AlexNet'], 
+                    help='model to train (default: AlexNet)')
+parser.add_argument('--pretrained', action='store_true', 
+                    help='pretrained AlexNet model (default: False)')
+parser.add_argument('--optimizer', default='adam', choices=['adam', 'sgd'], 
+                    help='optimizer (default: adam)')
+parser.add_argument('--momentum', default=0.5, type=float, 
+                    help='momentum (default: 0.5)')
+parser.add_argument('--lr', default=0.01, type=float, 
+                    help='learning rate (default: 0.01)')
+
 parser.add_argument('--features', default=12288, type=int, 
                     help='number of input features to SVM (default: 12288)')
 parser.add_argument('--classes', default=200, type=int, 
@@ -53,8 +60,7 @@ parser.add_argument('--reg', action='store_true',
                     help='L2 regularization for hinge loss (default: False)')
 parser.add_argument('--margin', default=20, type=int, 
                     help='margin for computing hinge loss (default: 20)')
-parser.add_argument('--data-augmentation', action='store_false', 
-                    help='data augmentation when preparing Tiny ImageNet (default: True)')
+
 parser.add_argument('--topk', default=1, type=int, 
                     help='top-k accuracy (default: 1)')
 parser.add_argument('--results-dir', default=os.path.join(os.getcwd(), 'results'), type=str, 
@@ -168,7 +174,13 @@ def run_experiment(args):
     
     # Model & Criterion
     if args.model == 'AlexNet':
-        model = AlexNet(args.classes)
+        if args.pretrained:
+            model = models.__dict__['alexnet'](pretrained=True)
+            # Change the last layer
+            in_f = model.classifier[-1].in_features
+            model.classifier[-1] = nn.Linear(in_f, args.classes)
+        else:
+            model = AlexNet(args.classes)
         criterion = nn.CrossEntropyLoss(size_average=False)
     else:
         model = SVM(args.features, args.classes)

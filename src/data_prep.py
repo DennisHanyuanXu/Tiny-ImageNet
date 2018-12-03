@@ -46,13 +46,16 @@ def prepare_imagenet(args):
     # norm = transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
     
     print('Preparing dataset ...')
-    norm = transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
-    
-    train_trans = [transforms.ToTensor(), norm]
-    val_trans = [transforms.ToTensor(), norm]
-    # Data augmentation
-    if args.data_augmentation:
-        train_trans = [transforms.RandomHorizontalFlip()] + train_trans
+    norm = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) \
+        if args.pretrained else transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+    if args.pretrained:
+        train_trans = [transforms.RandomResizedCrop(224), transforms.RandomHorizontalFlip(), 
+                        transforms.ToTensor(), norm]
+        val_trans = [transforms.Resize(256), transforms.CenterCrop(224), transforms.ToTensor(), 
+                        norm]
+    else:
+        train_trans = [transforms.RandomHorizontalFlip(), transforms.ToTensor(), norm]
+        val_trans = [transforms.ToTensor(), norm]
 
     train_data = datasets.ImageFolder(train_dir, 
                                     transform=transforms.Compose(train_trans))
