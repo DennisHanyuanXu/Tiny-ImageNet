@@ -11,7 +11,7 @@ import torchsample.transforms as tstf
 
 def prepare_mnist(args):
     DatasetClass = datasets.MNIST
-    kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
+    kwargs = {'num_workers': 1, 'pin_memory': True} if not args.no_cuda else {}
     dataset_dir = os.path.join(args.data_dir, args.dataset)
     
     train_dataset = DatasetClass(dataset_dir, train=True, download=True, 
@@ -39,7 +39,7 @@ def prepare_imagenet(args):
     dataset_dir = os.path.join(args.data_dir, args.dataset)
     train_dir = os.path.join(dataset_dir, 'train')
     val_dir = os.path.join(dataset_dir, 'val', 'images')
-    kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
+    kwargs = {'num_workers': 1, 'pin_memory': True} if not args.no_cuda else {}
 
     # Pre-calculated mean & std on imagenet:
     # norm = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
@@ -54,18 +54,18 @@ def prepare_imagenet(args):
     # Normal transformation
     if args.pretrained:
         train_trans = [transforms.RandomHorizontalFlip(), transforms.RandomResizedCrop(224), 
-                        transforms.ToTensor(), norm]
+                        transforms.ToTensor()]
         val_trans = [transforms.Resize(256), transforms.CenterCrop(224), transforms.ToTensor(), norm]
     else:
-        train_trans = [transforms.RandomHorizontalFlip(), transforms.ToTensor(), norm]
+        train_trans = [transforms.RandomHorizontalFlip(), transforms.ToTensor()]
         val_trans = [transforms.ToTensor(), norm]
 
     # Data augmentation (torchsample)
-    if args.data_augmentation:
+    if not args.no_da:
         train_trans += [tstf.RandomGamma(0.5, 1.5)]
 
     train_data = datasets.ImageFolder(train_dir, 
-                                    transform=transforms.Compose(train_trans))
+                                    transform=transforms.Compose(train_trans + [norm]))
     
     val_data = datasets.ImageFolder(val_dir, 
                                     transform=transforms.Compose(val_trans))

@@ -36,15 +36,15 @@ parser.add_argument('--epochs', default=25, type=int,
                     help='number of total epochs to run (default: 25)')
 parser.add_argument('--seed', default=1, type=int, 
                     help='seed for initializing training (default: 1)')
-parser.add_argument('--cuda', action='store_false', 
-                    help='cuda (default: True)')
+parser.add_argument('--no-cuda', action='store_true', 
+                    help='without cuda (default: False)')
 parser.add_argument('--log-interval', default=100, type=int, 
                     help='batches to wait before logging detailed status (default: 100)')
 
 parser.add_argument('--model', default='AlexNet', choices=['SVM', 'AlexNet'], 
                     help='model to train (default: AlexNet)')
-parser.add_argument('--data-augmentation', action='store_false', 
-                    help='data augmentation when loading Tiny ImageNet (default: True)')
+parser.add_argument('--no-da', action='store_true', 
+                    help='without data augmentation when loading Tiny ImageNet (default: False)')
 parser.add_argument('--pretrained', action='store_true', 
                     help='pretrained AlexNet model (default: False)')
 parser.add_argument('--optimizer', default='adam', choices=['adam', 'sgd'], 
@@ -82,7 +82,7 @@ def train(model, criterion, optimizer, train_loader, epoch,
         if args.model == 'SVM':
             data = data.view(-1, args.features)
         
-        if args.cuda:
+        if not args.no_cuda:
             data, target = data.cuda(), target.cuda()
         data, target = Variable(data), Variable(target)
 
@@ -136,7 +136,7 @@ def test(model, criterion, test_loader, epoch, val_losses, val_accs, args):
             if args.model == 'SVM':
                 data = data.view(-1, args.features)
             
-            if args.cuda:
+            if not args.no_cuda:
                 data, target = data.cuda(), target.cuda()
             data, target = Variable(data), Variable(target)
             
@@ -164,7 +164,7 @@ def test(model, criterion, test_loader, epoch, val_losses, val_accs, args):
 
 def run_experiment(args):
     torch.manual_seed(args.seed)
-    if args.cuda:
+    if not args.no_cuda:
         torch.cuda.manual_seed(args.seed)
     
     # Dataset
@@ -187,7 +187,7 @@ def run_experiment(args):
     else:
         model = SVM(args.features, args.classes)
         criterion = MultiClassHingeLoss(margin=args.margin, size_average=False)
-    if args.cuda:
+    if not args.no_cuda:
         model.cuda()
     
     # Optimizer
@@ -233,5 +233,7 @@ def run_experiment(args):
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    args.cuda = args.cuda and torch.cuda.is_available()
+    if not torch.cuda.is_available():
+        args.no_cuda = True
+    print('Parameters: ', args)
     run_experiment(args)
