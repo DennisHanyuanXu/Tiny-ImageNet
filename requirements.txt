@@ -1,0 +1,15 @@
+cycler==0.10.0
+kiwisolver==1.0.1
+matplotlib==3.0.2
+nibabel==2.3.1
+numpy==1.15.4
+pandas==0.23.4
+Pillow==5.3.0
+pyparsing==2.3.0
+python-dateutil==2.7.5
+pytz==2018.7
+six==1.11.0
+torch==0.4.1
+-e git+https://github.com/ncullen93/torchsample@ea104e6d678092ceb34db455a73f74f98dbcec31#egg=torchsample
+torchvision==0.2.1
+tqdm==4.28.1
