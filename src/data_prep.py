@@ -6,6 +6,7 @@ import os
 import torch
 from torchvision import datasets
 from torchvision import transforms
+from torchsample.transforms import RandomRotate, RandomAdjustGamma
 
 
 def prepare_mnist(args):
@@ -46,16 +47,25 @@ def prepare_imagenet(args):
     # norm = transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
     
     print('Preparing dataset ...')
+    # Normalization
     norm = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) \
         if args.pretrained else transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+
+    # Data augmentation
+    comb = [transforms.RandomHorizontalFlip(), 
+            transforms.ColorJitter(hue=0.05, saturation=0.05), 
+            RandomRotate(20), 
+            RandomAdjustGamma(0.5, 1.5)]
+
+    train_trans = comb[:] if args.data_augmentation else []
+    val_trans = comb[:] if args.data_augmentation else []
+
     if args.pretrained:
-        train_trans = [transforms.RandomResizedCrop(224), transforms.RandomHorizontalFlip(), 
-                        transforms.ToTensor(), norm]
-        val_trans = [transforms.Resize(256), transforms.CenterCrop(224), transforms.ToTensor(), 
-                        norm]
+        train_trans += [transforms.RandomResizedCrop(224), transforms.ToTensor(), norm]
+        val_trans += [transforms.Resize(256), transforms.CenterCrop(224), transforms.ToTensor(), norm]
     else:
-        train_trans = [transforms.RandomHorizontalFlip(), transforms.ToTensor(), norm]
-        val_trans = [transforms.ToTensor(), norm]
+        train_trans += [transforms.ToTensor(), norm]
+        val_trans += [transforms.ToTensor(), norm]
 
     train_data = datasets.ImageFolder(train_dir, 
                                     transform=transforms.Compose(train_trans))

@@ -43,6 +43,8 @@ parser.add_argument('--log-interval', default=100, type=int,
 
 parser.add_argument('--model', default='AlexNet', choices=['SVM', 'AlexNet'], 
                     help='model to train (default: AlexNet)')
+parser.add_argument('--data-augmentation', action='store_false', 
+                    help='data augmentation when loading Tiny ImageNet (default: True)')
 parser.add_argument('--pretrained', action='store_true', 
                     help='pretrained AlexNet model (default: False)')
 parser.add_argument('--optimizer', default='adam', choices=['adam', 'sgd'], 
