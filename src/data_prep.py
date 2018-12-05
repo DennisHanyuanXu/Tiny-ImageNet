@@ -61,10 +61,13 @@ def prepare_imagenet(args):
         val_trans = [transforms.ToTensor(), norm]
 
     # Data augmentation (torchsample)
+    '''
+    # torchsample doesn't really help here
     if not args.no_da:
         train_trans += [tstf.Gamma(0.7),
                         tstf.Brightness(0.2),
                         tstf.Saturation(0.2)]
+    '''
 
     train_data = datasets.ImageFolder(train_dir, 
                                     transform=transforms.Compose(train_trans + [norm]))
