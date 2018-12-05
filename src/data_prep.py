@@ -62,11 +62,9 @@ def prepare_imagenet(args):
 
     # Data augmentation (torchsample)
     if not args.no_da:
-        train_trans += [tstf.RandomGamma(0.7),
+        train_trans += [tstf.Gamma(0.7),
                         tstf.Brightness(0.2),
-                        tstf.Saturation(0.2),
-                        tstf.Contrast(1.3),
-                        tstf.Rotate(20)]
+                        tstf.Saturation(0.2)]
 
     train_data = datasets.ImageFolder(train_dir, 
                                     transform=transforms.Compose(train_trans + [norm]))
