@@ -11,7 +11,7 @@ import torchsample.transforms as tstf
 
 def prepare_mnist(args):
     DatasetClass = datasets.MNIST
-    kwargs = {'num_workers': 1, 'pin_memory': True} if not args.no_cuda else {}
+    kwargs = {} if args.no_cuda else {'num_workers': 1, 'pin_memory': True}
     dataset_dir = os.path.join(args.data_dir, args.dataset)
     
     train_dataset = DatasetClass(dataset_dir, train=True, download=True, 
@@ -39,7 +39,7 @@ def prepare_imagenet(args):
     dataset_dir = os.path.join(args.data_dir, args.dataset)
     train_dir = os.path.join(dataset_dir, 'train')
     val_dir = os.path.join(dataset_dir, 'val', 'images')
-    kwargs = {'num_workers': 1, 'pin_memory': True} if not args.no_cuda else {}
+    kwargs = {} if args.no_cuda else {'num_workers': 1, 'pin_memory': True}
 
     # Pre-calculated mean & std on imagenet:
     # norm = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
@@ -62,7 +62,11 @@ def prepare_imagenet(args):
 
     # Data augmentation (torchsample)
     if not args.no_da:
-        train_trans += [tstf.RandomGamma(0.5, 1.5)]
+        train_trans += [tstf.RandomGamma(0.7),
+                        tstf.Brightness(0.2),
+                        tstf.Saturation(0.2),
+                        tstf.Contrast(1.3),
+                        tstf.Rotate(20)]
 
     train_data = datasets.ImageFolder(train_dir, 
                                     transform=transforms.Compose(train_trans + [norm]))
