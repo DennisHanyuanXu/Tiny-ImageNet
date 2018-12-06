@@ -228,6 +228,7 @@ def run_experiment(args):
     if not os.path.exists(args.results_dir):
         os.makedirs(args.results_dir)
     filename = '_'.join([args.prefix, args.dataset, args.model, 'plot.png'])
+    fig.suptitle(filename)
     fig.savefig(os.path.join(args.results_dir, filename))
 
 
