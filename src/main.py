@@ -27,7 +27,6 @@ parser.add_argument('--dataset', default='tiny-imagenet-200',
                     help='name of dataset to train on (default: tiny-imagenet-200)')
 parser.add_argument('--data-dir', default=os.getcwd(), type=str, 
                     help='path to dataset (default: current directory)')
-
 parser.add_argument('--batch-size', default=1000, type=int, 
                     help='mini-batch size for training (default: 1000)')
 parser.add_argument('--test-batch-size', default=1000, type=int, 
@@ -37,38 +36,43 @@ parser.add_argument('--epochs', default=25, type=int,
 parser.add_argument('--seed', default=1, type=int, 
                     help='seed for initializing training (default: 1)')
 parser.add_argument('--no-cuda', action='store_true', 
-                    help='without cuda (default: False)')
+                    help='run without cuda (default: False)')
 parser.add_argument('--log-interval', default=100, type=int, 
                     help='batches to wait before logging detailed status (default: 100)')
-
 parser.add_argument('--model', default='AlexNet', choices=['SVM', 'AlexNet'], 
                     help='model to train (default: AlexNet)')
-parser.add_argument('--no-da', action='store_true', 
-                    help='without data augmentation when loading Tiny ImageNet (default: False)')
+parser.add_argument('--ts', action='store_true', 
+                    help='data augmentation by torchsample (default: False)')
 parser.add_argument('--pretrained', action='store_true', 
-                    help='pretrained AlexNet model (default: False)')
+                    help='use pretrained AlexNet model (default: False)')
 parser.add_argument('--optimizer', default='adam', choices=['adam', 'sgd'], 
                     help='optimizer (default: adam)')
 parser.add_argument('--momentum', default=0.5, type=float, 
                     help='momentum (default: 0.5)')
 parser.add_argument('--lr', default=0.01, type=float, 
                     help='learning rate (default: 0.01)')
-
 parser.add_argument('--features', default=12288, type=int, 
                     help='number of input features to SVM (default: 12288)')
 parser.add_argument('--classes', default=200, type=int, 
                     help='number of output classes of SVM (default: 200)')
 parser.add_argument('--reg', action='store_true', 
-                    help='L2 regularization for hinge loss (default: False)')
+                    help='add L2 regularization for hinge loss (default: False)')
 parser.add_argument('--margin', default=20, type=int, 
                     help='margin for computing hinge loss (default: 20)')
-
 parser.add_argument('--topk', default=1, type=int, 
                     help='top-k accuracy (default: 1)')
 parser.add_argument('--results-dir', default=os.path.join(os.getcwd(), 'results'), type=str, 
-                    help='path to results (default: current directory)')
+                    help='path to results (default: cwd/results)')
 parser.add_argument('--prefix', default='default', type=str, 
                     help='prefix of the plot (default: default)')
+parser.add_argument('--save', action='store_true', 
+                    help='save model (default: False)')
+parser.add_argument('--models-dir', default=os.path.join(os.getcwd(), 'models'), type=str, 
+                    help='path to save models (default: cwd/models)')
+parser.add_argument('--load', action='store_true', 
+                    help='load model (default: False)')
+parser.add_argument('--model-path', default=os.path.join(os.getcwd(), 'models', 'default.pt'), type=str, 
+                    help='path to saved model (default: cwd/models/default.pt)')
 
 
 def train(model, criterion, optimizer, train_loader, epoch, 
@@ -173,7 +177,7 @@ def run_experiment(args):
     else:
         create_val_img_folder(args)
         train_loader, test_loader, _, _ = prepare_imagenet(args)
-    
+
     # Model & Criterion
     if args.model == 'AlexNet':
         if args.pretrained:
@@ -189,7 +193,13 @@ def run_experiment(args):
         criterion = MultiClassHingeLoss(margin=args.margin, size_average=False)
     if not args.no_cuda:
         model.cuda()
-    
+
+    # Load saved model and test on it
+    if args.load:
+        model.load_state_dict(torch.load(args.model_path))
+        val_acc = test(model, criterion, test_loader, None, [], [], args)
+        return
+
     # Optimizer
     if args.optimizer == 'adam':
         optimizer = optim.Adam(model.parameters())
@@ -201,6 +211,7 @@ def run_experiment(args):
     train_losses, train_accs = [], []
     val_losses, val_accs = [], []
 
+    # Train and test
     for epoch in range(1, args.epochs + 1):
         total_minibatch_count = train(model, criterion, optimizer, train_loader, 
                                       epoch, total_minibatch_count, train_losses, 
@@ -208,6 +219,13 @@ def run_experiment(args):
         
         val_acc = test(model, criterion, test_loader, epoch, val_losses, val_accs, args)
     
+    # Save model
+    if args.save:
+        if not os.path.exists(args.models_dir):
+            os.makedirs(args.models_dir)
+        filename = '_'.join([args.prefix, args.dataset, args.model, 'model.pt'])
+        torch.save(model.state_dict(), os.path.join(args.models_dir, filename))
+
     # Plot graphs
     fig, axes = plt.subplots(1, 4, figsize=(13, 4))
     axes[0].plot(train_losses)
@@ -220,7 +238,6 @@ def run_experiment(args):
     axes[3].plot(val_accs)
     axes[3].set_title('Val Acc')
     axes[3].set_ylim([0, 1])
-
     # Images don't show on Ubuntu
     # plt.tight_layout()
 
