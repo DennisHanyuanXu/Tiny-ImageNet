@@ -191,7 +191,7 @@ def test(model, criterion, test_loader, epoch, val_losses, val_accs, idx_to_clas
         plt.bar(range(5), [m[1] for m in most], align='center', alpha=0.5)
         plt.xticks(range(5), [m[0] + '\n' + class_to_name[m[0]] for m in most], fontsize='small')
         plt.ylabel('Misclassified')
-        plt.title('Least Misclassified Images')
+        plt.title('Most Misclassified Images')
         filename = '_'.join([args.prefix, args.dataset, args.model, 'err_most.png'])
         plt.savefig(os.path.join(args.results_dir, filename))
 
