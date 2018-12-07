@@ -181,7 +181,7 @@ def test(model, criterion, test_loader, epoch, val_losses, val_accs, idx_to_clas
         class_to_name = get_class_name(args)
 
         plt.bar(range(5), [l[1] for l in least], align='center', alpha=0.5)
-        plt.xticks(range(5), [l[0] + '\n' + class_to_name[l[0]] for l in least], fontsize='small')
+        plt.xticks(range(5), [l[0] + '\n' + class_to_name[l[0]] for l in least], fontsize='xx-small')
         plt.ylabel('Misclassified')
         plt.title('Least Misclassified Images')
         filename = '_'.join([args.prefix, args.dataset, args.model, 'err_least.png'])
@@ -189,7 +189,7 @@ def test(model, criterion, test_loader, epoch, val_losses, val_accs, idx_to_clas
         plt.clf()
 
         plt.bar(range(5), [m[1] for m in most], align='center', alpha=0.5)
-        plt.xticks(range(5), [m[0] + '\n' + class_to_name[m[0]] for m in most], fontsize='small')
+        plt.xticks(range(5), [m[0] + '\n' + class_to_name[m[0]] for m in most], fontsize='xx-small')
         plt.ylabel('Misclassified')
         plt.title('Most Misclassified Images')
         filename = '_'.join([args.prefix, args.dataset, args.model, 'err_most.png'])
