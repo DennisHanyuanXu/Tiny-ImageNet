@@ -14,8 +14,9 @@ import torch.optim as optim
 from torch.autograd import Variable
 from torch.nn.parameter import Parameter
 import torchvision.models as models
+from collections import defaultdict
 
-from data_prep import prepare_mnist, prepare_imagenet, create_val_img_folder
+from data_prep import *
 from svm import SVM, MultiClassHingeLoss
 from alexnet import AlexNet
 
@@ -73,6 +74,8 @@ parser.add_argument('--load', action='store_true',
                     help='load model (default: False)')
 parser.add_argument('--model-path', default=os.path.join(os.getcwd(), 'models', 'default.pt'), type=str, 
                     help='path to saved model (default: cwd/models/default.pt)')
+parser.add_argument('--err', action='store_true', 
+                    help='plot error analysis graphs')
 
 
 def train(model, criterion, optimizer, train_loader, epoch, 
@@ -102,7 +105,7 @@ def train(model, criterion, optimizer, train_loader, epoch,
                     l2_reg = W.norm(2)
                 else:
                     l2_reg = l2_reg + W.norm(2)
-            loss += 1/2 * l2_reg
+            loss += 1 / 2 * l2_reg
         
         # Backpropagation  
         loss.backward()
@@ -130,11 +133,12 @@ def train(model, criterion, optimizer, train_loader, epoch,
     return total_minibatch_count
 
 
-def test(model, criterion, test_loader, epoch, val_losses, val_accs, args):
+def test(model, criterion, test_loader, epoch, val_losses, val_accs, idx_to_class, args):
     model.eval()
     test_loss, correct = 0., 0.
     progress_bar = tqdm.tqdm(test_loader, desc='Validation')
     
+    counter = defaultdict(int)
     with torch.no_grad():
         for data, target in progress_bar:
             if args.model == 'SVM':
@@ -147,6 +151,13 @@ def test(model, criterion, test_loader, epoch, val_losses, val_accs, args):
             output = model(data)
             test_loss += criterion(output, target).data
             
+            # Error analysis at last epoch
+            if args.err and epoch == args.epochs:
+                pred = output.data.max(1)[1]
+                for i in range(len(target)):
+                    if target[i] != pred[i]:
+                        counter[idx_to_class[int(target[i])]] += 1
+
             top_indices = torch.topk(output.data, args.topk)[1].t()
             match = top_indices.eq(target.view(1, -1).expand_as(top_indices))
             correct += match.view(-1).float().sum(0)
@@ -163,6 +174,26 @@ def test(model, criterion, test_loader, epoch, val_losses, val_accs, args):
             epoch, test_loss, correct, len(test_loader.dataset),
             100. * correct / len(test_loader.dataset)))
 
+    # Plot graph for error analysis
+    if args.err and epoch == args.epochs:
+        least = sorted(counter.items(), key=lambda x: x[1])[:5]
+        most = sorted(counter.items(), key=lambda x: x[1], reverse=True)[:5]
+
+        plt.bar(range(5), [l[1] for l in least], align='center', alpha=0.5)
+        plt.xticks(range(5), [l[0] for l in least])
+        plt.ylabel('Misclassified')
+        plt.title('Least Misclassified Images')
+        filename = '_'.join([args.prefix, args.dataset, args.model, 'err_least.png'])
+        plt.savefig(filename)
+        plt.clf()
+
+        plt.bar(range(5), [m[1] for m in most], align='center', alpha=0.5)
+        plt.xticks(range(5), [m[0] for m in most])
+        plt.ylabel('Misclassified')
+        plt.title('Least Misclassified Images')
+        filename = '_'.join([args.prefix, args.dataset, args.model, 'err_most.png'])
+        plt.savefig(filename)
+
     return acc
 
 
@@ -173,10 +204,11 @@ def run_experiment(args):
     
     # Dataset
     if args.dataset == 'mnist':
-        train_loader, test_loader, _, _ = prepare_mnist(args)
+        train_loader, test_loader, _, val_data = prepare_mnist(args)
     else:
         create_val_img_folder(args)
-        train_loader, test_loader, _, _ = prepare_imagenet(args)
+        train_loader, test_loader, _, val_data = prepare_imagenet(args)
+    idx_to_class = {i: c for c, i in val_data.class_to_idx.items()}
 
     # Model & Criterion
     if args.model == 'AlexNet':
@@ -197,8 +229,7 @@ def run_experiment(args):
     # Load saved model and test on it
     if args.load:
         model.load_state_dict(torch.load(args.model_path))
-        val_acc = test(model, criterion, test_loader, None, [], [], args)
-        return
+        val_acc = test(model, criterion, test_loader, None, [], [], idx_to_class, args)
 
     # Optimizer
     if args.optimizer == 'adam':
@@ -214,10 +245,11 @@ def run_experiment(args):
     # Train and test
     for epoch in range(1, args.epochs + 1):
         total_minibatch_count = train(model, criterion, optimizer, train_loader, 
-                                      epoch, total_minibatch_count, train_losses, 
-                                      train_accs, args)
+                                    epoch, total_minibatch_count, train_losses, 
+                                    train_accs, args)
         
-        val_acc = test(model, criterion, test_loader, epoch, val_losses, val_accs, args)
+        val_acc = test(model, criterion, test_loader, epoch, val_losses, val_accs, 
+                    idx_to_class, args)
     
     # Save model
     if args.save:
