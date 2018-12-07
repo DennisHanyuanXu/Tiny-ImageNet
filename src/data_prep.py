@@ -106,3 +106,14 @@ def create_val_img_folder(args):
             os.makedirs(newpath)
         if os.path.exists(os.path.join(img_dir, img)):
             os.rename(os.path.join(img_dir, img), os.path.join(newpath, img))
+
+
+def get_class_name(args):
+    class_to_name = dict()
+    fp = open(os.path.join(args.data_dir, args.dataset, 'words.txt'), 'r')
+    data = fp.readlines()
+    for line in data:
+        words = line.strip('\n').split('\t')
+        class_to_name[words[0]] = words[1].split(',')[0]
+    fp.close()
+    return class_to_name
