@@ -184,7 +184,7 @@ def test(model, criterion, test_loader, epoch, val_losses, val_accs, idx_to_clas
         plt.ylabel('Misclassified')
         plt.title('Least Misclassified Images')
         filename = '_'.join([args.prefix, args.dataset, args.model, 'err_least.png'])
-        plt.savefig(filename)
+        plt.savefig(os.path.join(args.results_dir, filename))
         plt.clf()
 
         plt.bar(range(5), [m[1] for m in most], align='center', alpha=0.5)
@@ -192,7 +192,7 @@ def test(model, criterion, test_loader, epoch, val_losses, val_accs, idx_to_clas
         plt.ylabel('Misclassified')
         plt.title('Least Misclassified Images')
         filename = '_'.join([args.prefix, args.dataset, args.model, 'err_most.png'])
-        plt.savefig(filename)
+        plt.savefig(os.path.join(args.results_dir, filename))
 
     return acc
 
@@ -229,7 +229,7 @@ def run_experiment(args):
     # Load saved model and test on it
     if args.load:
         model.load_state_dict(torch.load(args.model_path))
-        val_acc = test(model, criterion, test_loader, None, [], [], idx_to_class, args)
+        val_acc = test(model, criterion, test_loader, 0, [], [], idx_to_class, args)
 
     # Optimizer
     if args.optimizer == 'adam':
