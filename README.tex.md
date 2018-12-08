@@ -66,7 +66,7 @@ optional arguments:
 
 ## Examples
 ### Train AlexNet from scratch
-__Optional parameters__: add prefix to plots; save model; plot [error analysis](#2.-2.-4-error-analysis)
+__Optional parameters__: add prefix to plots; save model; plot error analysis (see __2. 2. 4__)
 ```
 python src/main.py --prefix top1_default --save --err
 ```
@@ -76,7 +76,7 @@ __Optional parameters__: use pretrained model; add prefix to plots; compute top-
 python src/main.py --pretrained --prefix top5_pretrained --topk 5 --epochs 15
 ```
 ### Load a model and plot error analysis
-__Optional parameters__: load model; set epoch (test without further training); plot [error analysis](#2.-2.-4-error-analysis)
+__Optional parameters__: load model; set epoch (test without further training); plot error analysis (see __2. 2. 4__)
 ```
 python src/main.py --load --model-path models/top1_default_tiny-imagenet-200_AlexNet_model.pt --epoch 0 --err
 ```
@@ -133,6 +133,6 @@ Here are the most and least classified images in the validation set. Generally, 
 
 ![pretrained_tiny-imagenet-200_AlexNet_err_least](./results/pretrained_tiny-imagenet-200_AlexNet_err_least.png)
 
-The most-misclassified classes are those where the object’s shape or color is similar to objects of other classes (bucket) or where the background is too complex and the main object only makes up a small part of the image (plunger, bow tie).  
+The most-misclassified images are those where the object’s shape or color is similar to objects of other classes (bucket) or where the background is too complex and the main object only makes up a small part of the image (plunger, bow tie).  
 
 ![pretrained_tiny-imagenet-200_AlexNet_err_most](./results/pretrained_tiny-imagenet-200_AlexNet_err_most.png)
