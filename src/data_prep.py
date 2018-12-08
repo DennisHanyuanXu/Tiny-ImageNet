@@ -15,9 +15,9 @@ def prepare_mnist(args):
     dataset_dir = os.path.join(args.data_dir, args.dataset)
     
     train_dataset = DatasetClass(dataset_dir, train=True, download=True, 
-                                 transform=transforms.Compose([
-                                     transforms.ToTensor(), 
-                                     transforms.Normalize((0.1307,), (0.3081,))]))
+                                transform=transforms.Compose([
+                                    transforms.ToTensor(), 
+                                    transforms.Normalize((0.1307,), (0.3081,))]))
     
     test_dataset = DatasetClass(dataset_dir, train=False, 
                                 transform=transforms.Compose([
@@ -25,12 +25,12 @@ def prepare_mnist(args):
                                     transforms.Normalize((0.1307,), (0.3081,))]))
     
     train_loader = torch.utils.data.DataLoader(train_dataset, 
-                                               batch_size=args.batch_size, 
-                                               shuffle=True, **kwargs)
+                                                batch_size=args.batch_size, 
+                                                shuffle=True, **kwargs)
     
     test_loader = torch.utils.data.DataLoader(test_dataset, 
-                                              batch_size=args.test_batch_size, 
-                                              shuffle=True, **kwargs)
+                                                batch_size=args.test_batch_size, 
+                                                shuffle=True, **kwargs)
     
     return train_loader, test_loader, train_dataset, test_dataset
 
@@ -78,7 +78,7 @@ def prepare_imagenet(args):
                                                     shuffle=True, **kwargs)
     
     val_data_loader = torch.utils.data.DataLoader(val_data, batch_size=args.test_batch_size, 
-                                                  shuffle=True, **kwargs)
+                                                    shuffle=True, **kwargs)
     
     return train_data_loader, val_data_loader, train_data, val_data
 

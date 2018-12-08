@@ -43,7 +43,7 @@ parser.add_argument('--log-interval', default=100, type=int,
 parser.add_argument('--model', default='AlexNet', choices=['SVM', 'AlexNet'], 
                     help='model to train (default: AlexNet)')
 parser.add_argument('--ts', action='store_true', 
-                    help='data augmentation by torchsample (default: False)')
+                    help='data augmentation using torchsample (default: False)')
 parser.add_argument('--pretrained', action='store_true', 
                     help='use pretrained AlexNet model (default: False)')
 parser.add_argument('--optimizer', default='adam', choices=['adam', 'sgd'], 
@@ -63,19 +63,19 @@ parser.add_argument('--margin', default=20, type=int,
 parser.add_argument('--topk', default=1, type=int, 
                     help='top-k accuracy (default: 1)')
 parser.add_argument('--results-dir', default=os.path.join(os.getcwd(), 'results'), type=str, 
-                    help='path to results (default: cwd/results)')
+                    help='path to plots (default: cwd/results)')
 parser.add_argument('--prefix', default='default', type=str, 
                     help='prefix of the plot (default: default)')
 parser.add_argument('--save', action='store_true', 
                     help='save model (default: False)')
 parser.add_argument('--models-dir', default=os.path.join(os.getcwd(), 'models'), type=str, 
-                    help='path to save models (default: cwd/models)')
+                    help='path to save model (default: cwd/models)')
 parser.add_argument('--load', action='store_true', 
                     help='load model (default: False)')
 parser.add_argument('--model-path', default=os.path.join(os.getcwd(), 'models', 'default.pt'), type=str, 
-                    help='path to saved model (default: cwd/models/default.pt)')
+                    help='path to load model (default: cwd/models/default.pt)')
 parser.add_argument('--err', action='store_true', 
-                    help='plot error analysis graphs')
+                    help='plot error analysis graphs (default: False)')
 
 
 def train(model, criterion, optimizer, train_loader, epoch, 
