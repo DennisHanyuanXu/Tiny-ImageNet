@@ -2,7 +2,7 @@ cycler==0.10.0
 kiwisolver==1.0.1
 matplotlib==3.0.2
 nibabel==2.3.1
-numpy==1.21.0
+numpy==1.22.0
 pandas==0.23.4
 Pillow==9.0.0
 pyparsing==2.3.0
