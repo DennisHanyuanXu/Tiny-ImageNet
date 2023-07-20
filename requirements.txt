@@ -9,7 +9,7 @@ pyparsing==2.3.0
 python-dateutil==2.7.5
 pytz==2018.7
 six==1.11.0
-torch==0.4.1
+torch==1.13.1
 -e git+https://github.com/ncullen93/torchsample@ea104e6d678092ceb34db455a73f74f98dbcec31#egg=torchsample
 torchvision==0.2.1
 tqdm==4.28.1
